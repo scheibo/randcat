@@ -1,0 +1,37 @@
+#!/usr/bin/env node
+
+const child_process = require('child_process');
+const fs = require('fs');
+
+const imagemin = require('imagemin');
+const imageminJpegtran = require('imagemin-jpegtran');
+const imageminPngquant = require('imagemin-pngquant');
+
+const shell = cmd => child_process.execSync(cmd, {stdio: 'inherit', cwd: __dirname});
+
+shell('rm -rf /tmp/cats && mkdir -p /tmp/cats/{jpg,webp}');
+shell('curl -L https://archive.org/compress/CAT_DATASET/formats=ZIP > /tmp/cats/1.zip');
+shell('unzip /tmp/cats/1.zip -d /tmp/cats');
+shell('unzip /tmp/cats/CAT_DATASET_01.zip -d /tmp/cats');
+shell('unzip /tmp/cats/CAT_DATASET_02.zip -d /tmp/cats');
+
+
+
+function optimizeJPG(path, n) {
+  shell(`convert ${path} -resize 300x300\> -strip /tmp/cats/jpg/${n}.jpg`);
+
+
+}
+
+dirs = fs.readdirSync('/tmp/cats').filter(d => d.startsWith('CAT_'));
+
+let num = 0;
+for (dir of dirs) {
+  for (file of fs.readdirSync(dir)) {
+    if (!file.endsWith('.jpg')) continue;
+    const src = `${dir}/${file}`;
+    const dst = `jpg/${num}.jpg`;
+    fs.copyFileSync(src, dst); // TODO also apply resize
+    num++;
+  }
+}
