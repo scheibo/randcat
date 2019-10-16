@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang=en>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="icon" href="favicon.ico"><!-- TODO -->
+  <title>RANDCAT LADDER</title>
+  <style>
+    body {
+      font-family: "Roboto", "Helvetica Neue", "Helvetica", "Arial", sans-serif;
+      text-align: center;
+    }
+    .pics {
+      margin: 20px auto;
+      display: table;
+    }
+    .pic {
+      padding: 10px;
+      display: table-row;
+      vertical-align: middle;
+    }
+    button {
+      background: none!important;
+      border: none;
+      padding: 0!important;
+      color: #069;
+      text-decoration: underline;
+      cursor: pointer;
+    }
+    img { border: 5px solid black; }
+    @media(min-width: 660px) { 
+      .pics { margin: 50px auto; }
+      .pic { display: table-cell; }
+    }
+  </style>
+</head>
+<body>
+  <div id="content">
+    <h1>RANDCAT LADDER</h1>
+    <div class="pics">
+      <div class="pic"><button id="a"></button></div>
+      <div class="pic"><button id="b"></button></div>
+    </div>
+  </div>
+</body>
+  <script>
+    // TODO: detect malicious actors who are reversing results? (ie. test them on known data)
+    const TOTAL = 10000;
+
+    const a = Math.floor(Math.random() * TOTAL);
+    
+    // TODO: proper matchmaking...
+    let b = Math.floor(Math.random() * TOTAL);
+    if (a === b) b = a - 1 > 0 ? a - 1 : TOTAL;
+    
+    let img = document.createElement('img');
+    img.src = 'https://staging.pkmn.cc/cats/' + a + '.jpg';
+    document.getElementById('a').appendChild(img);
+    img = document.createElement('img');
+    img.src = 'https://staging.pkmn.cc/cats/' + b + '.jpg';
+    document.getElementById('b').appendChild(img);
+  </script>
+</html>
