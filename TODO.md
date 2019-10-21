@@ -64,6 +64,10 @@ last--;
   - create webp + jpg (fallback)
   - rename to number
 - quality control
+  - detectors:
+    - NSFW (filter NSFW)
+    - Humans (filter out images with humans)
+    - Cats (filter out images with no real cats)
   - dedup (save hash in db)
   - display N=100 images per page and select which to delete or keep
 - create sqlite database and write simple webserver
