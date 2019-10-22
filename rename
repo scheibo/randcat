@@ -1,0 +1,15 @@
+#!/usr/bin/env node
+
+const child_process = require('child_process');
+const fs = require('fs');
+
+const shell = cmd => child_process.execSync(cmd, {stdio: 'inherit', cwd: __dirname});
+
+let num = 0;
+const dir = 'pexel';
+for (file of fs.readdirSync(dir)) {
+  const src = `${dir}/${file}`;
+  const dst = `jpg/${num}.jpg`;
+  fs.copyFileSync(src, dst); // TODO also apply resize
+  num++;
+}

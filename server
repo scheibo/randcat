@@ -1,0 +1,36 @@
+#!/usr/bin/env node
+'use strict'
+
+const http = require('http');
+const fs = require('fs');
+const path = require('path');
+const url = require('url');
+
+const BAD = fs.createWriteStream('bad.txt', {flags:'a'});
+
+http.createServer((request, response) => {
+  const u = url.parse(request.url, true);
+  console.log(u);
+
+  if (u.pathname === '/') {
+    if (u.query.page) console.log('PAGE', u.query.page);
+  } else {
+    const file = path.join(__dirname, `${u.pathname}`);
+    if (!file.startsWith(__dirname)) {
+      response.writeHead(403);
+      response.end(403, 'utf-8');
+    } else {
+      fs.readFile(file, (error, content) => {
+        if (error) {
+          const code = error.code === 'ENOENT' ? 404 : 500;
+          response.writeHead(code);
+          response.end(`${code}`, 'utf-8');
+        } else {
+          response.writeHead(200, { 'Content-Type': 'image/jpg' });
+          response.end(content, 'utf-8');
+        }
+      });
+    }
+  }
+}).listen(8125);
+console.log('http://127.0.0.1:8125/');
