@@ -5,17 +5,60 @@ const http = require('http');
 const fs = require('fs');
 const path = require('path');
 const url = require('url');
+const querystring = require('querystring');
 
-const BAD = fs.createWriteStream('bad.txt', {flags:'a'});
+const nums = new Set(fs.existsSync('bad.txt') ? fs.readFileSync('bad.txt', 'utf-8').split('\n').map(n => Number(n)) : []);
+const BAD = {file: fs.createWriteStream('bad.txt', {flags:'a'}), nums};
 
 http.createServer((request, response) => {
   const u = url.parse(request.url, true);
-  console.log(u);
+  console.log(request.method, request.url);
 
   if (u.pathname === '/') {
-    if (u.query.page) console.log('PAGE', u.query.page);
+    const page = Number(u.query.page) || 0;
+    fs.readFile('index.html', 'utf-8', (error, content) => {
+      let data = '<table>';
+      for (let row = 0; row < 25; row++) {
+        data += '<tr>';
+        for (let col = 0; col < 4; col++) {
+          const num = page * 100 + row * 4 + col;
+          data += `<td><button value="${num}"><img src="/${num}.jpg" width=300 class="${BAD.nums.has(num) ? 'bad' : 'good'}" /></button></td>`
+        }
+        data += '</tr>';
+      }
+
+      data += '</table>';
+      // TODO back and next
+
+      content = content.replace('<!-- CONTENT -->', data);
+      response.writeHead(200, { 'Content-Type': 'text/html' });
+      response.end(content, 'utf-8');
+    });
+
+  } else if (u.pathname === '/bad') {
+    if (request.method === 'POST') {
+      let body = '';
+      request.on('data', chunk => {
+        body += chunk.toString();
+      });
+      request.on('end', () => {
+        const num = Number(querystring.parse(body).num);
+        if (!num) {
+          response.writeHead(403);
+          response.end(403, 'utf-8');
+        } else {
+          BAD.nums.add(num);
+          BAD.file.write(`${num}\n`);
+          response.end('ok');
+        }
+      });
+    } else {
+      // TODO
+      response.writeHead(200, { 'Content-Type': 'text/plain' });
+      response.end(Array.from(BAD.nums).join('\n'), 'utf-8');
+    }
   } else {
-    const file = path.join(__dirname, `${u.pathname}`);
+    const file = path.join(__dirname, `./jpg/${u.pathname}`);
     if (!file.startsWith(__dirname)) {
       response.writeHead(403);
       response.end(403, 'utf-8');
